@@ -1,7 +1,5 @@
-# import the necessary packages
 import base64
 import numpy as np
-import sys
 
 
 def base64_encode_image(a):
@@ -9,16 +7,21 @@ def base64_encode_image(a):
     return base64.b64encode(a).decode('utf-8')
 
 
-def base64_decode_image(a, dtype, shape):
-    # if this is Python 3, we need the extra step of encoding the
-    # serialized NumPy string as a byte object
-    if sys.version_info.major == 3:
-        a = bytes(a, encoding='utf-8')
+def base64_decode_image(image_b64, dtype, shape):
+    """ Takes image string and return numpy array
 
-    # convert the string to a NumPy array using the supplied data
-    # type and target shape
-    a = np.frombuffer(base64.decodebytes(a), dtype=dtype)
-    a = a.reshape(shape)
+    Args:
+        image_b64(str): Image str
+        dtype(np.dtype): Numpy dtype, could be np.uint8, np.float32, etc.
+        shape(tuple): image shape
 
-    # return the decoded image
-    return a
+    Returns:
+        image_array(np.array): Image in np array format
+
+    """
+
+    image_bytes = bytes(image_b64, encoding='utf-8')
+    image_array = np.frombuffer(base64.decodebytes(image_bytes), dtype=dtype)
+    image_array = image_array.reshape(shape)
+
+    return image_array

@@ -100,6 +100,15 @@ def detect_finder_patterns(edged):
 
 
 def find_pattern_points(list_squares):
+    """ Finds the center points of the given finder patterns
+
+    Args:
+        list_squares (list): List of finder patterns
+
+    Returns:
+        points (list): List of center points
+
+    """
     # Find square center
     points = []
     for square in list_squares:
@@ -116,6 +125,15 @@ def find_pattern_points(list_squares):
 
 
 def find_nw_pattern(points):
+    """ Finds the North West point, given a set of points
+
+    Args:
+        points (list): List of center points
+
+    Returns:
+        index_nw (int): Index of the nw found point
+
+    """
     distances = [0, 0, 0]
 
     dist1 = np.linalg.norm(points[0] - points[1])
@@ -131,14 +149,24 @@ def find_nw_pattern(points):
     return index_nw
 
 
-def calculate_nw_rotation(nw_pattern, image_shape):
+def calculate_nw_rotation(nw_point, image_shape):
+    """ Calculate rotation Matrix to bring nw point to the
+        upper left corner.
+
+    Args:
+        nw_point (tuple): Point given (x,y) coordinates
+        image_shape (tuple): Image shape (h,w)
+
+    Returns:
+        tuple: Rotation Matrix and correction angle
+
+    """
     # Reference point
     ref_point = [0, 0]
     center_image = np.array(image_shape) // 2
     angle_ref = -np.arctan2(ref_point[0] - center_image[0], ref_point[1] - center_image[1]) * 180 / np.pi
 
     # Angle to nw point
-    nw_point = nw_pattern
     nw_angle = -np.arctan2(nw_point[0] - center_image[0], nw_point[1] - center_image[1]) * 180 / np.pi
     rotation_angle = nw_angle - angle_ref
 
@@ -151,6 +179,15 @@ def calculate_nw_rotation(nw_pattern, image_shape):
 
 
 def calculate_correction_angle(points, image_shape):
+    """Calculate the whole rotation given an image
+
+    Args:
+        points (list): Set of finder patterns center point
+        image_shape (tuple): Image shape (h, w)
+
+    Returns:
+        correction angle (float): Angle to be rotated
+    """
     index_nw = find_nw_pattern(points)
     M, rotation_angle = calculate_nw_rotation(points[index_nw], image_shape)
 
@@ -178,6 +215,15 @@ def calculate_correction_angle(points, image_shape):
 
 
 def rotate_image(image, angle):
+    """Rotates image bya a given angle
+
+    Args:
+        image (np.array): Image array
+        angle (float):  Rotation angle
+
+    Returns:
+        rotated_image (np.array)
+    """
     (h, w) = image.shape[:2]
     (cX, cY) = (w // 2, h // 2)
 
@@ -188,6 +234,14 @@ def rotate_image(image, angle):
 
 
 def correct_image(qr):
+    """ Takes a QR image and fixes its orientation
+    Args:
+        qr (np.array): QR image, usually found by an AI detector
+
+    Returns:
+        oriented_qr (np.array): Rotated QR if valid constrains, otherwise
+                                returns the original image
+    """
     resized = cv2.resize(qr, (300, 300))
     binary = preprocess(resized)
     edged = detect_edges(binary)
